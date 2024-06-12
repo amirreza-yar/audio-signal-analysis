@@ -21,3 +21,19 @@ Ensure you have the following Python libraries installed:
 You can install them using pip:
 ```bash
 pip install numpy scipy matplotlib
+
+To use jupyter notebook file ensure you have the following Python libraries installed:
+- `notebook`
+- `IPython`
+
+You can install them using pip:
+```bash
+pip install notebook IPython
+
+Also to use the gui ensure you have the following Python libraries installed:
+- `PyQt5`
+
+You can install them using pip:
+```bash
+pip install PyQt5
+
