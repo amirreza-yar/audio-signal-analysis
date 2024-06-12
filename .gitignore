@@ -1,0 +1,6 @@
+data/
+.venv/
+.ipynb_checkpoints/
+audio_analysis/__pycache__/
+audio_analysis_gui/__pycache__/
+newaudio/

@@ -1,56 +1,36 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.io.wavfile import read
+from audio_analysis.analysis import AudioAnalysis, save_outputs
+from pathlib import Path
 
-def read_voice(path):
-    rate, data = read(path)
-    amplitude = np.abs(np.fft.rfft(data))
-    frequency = np.fft.rfftfreq(len(data), 1/rate)
-    return rate, data, amplitude, frequency
+sample_audio = AudioAnalysis(path='potc.wav')
 
-def plot_amplitude_frequency(amplitude, frequency, title="Amplitude-Frequency"):
-    plt.plot(frequency, amplitude)
-    plt.xlabel('Frequency (Hz)')
-    plt.ylabel('Amplitude')
-    plt.title(title)
+save_dir = Path(__file__).parent / 'newaudio'
+if not save_dir.exists():
+    save_dir.mkdir(parents=True, exist_ok=True)
 
-def plot_spectrogram(data, rate, title="Spectrogram"):
-    plt.specgram(data, Fs=rate)
-    plt.xlabel('Time')
-    plt.ylabel('Frequency')
-    plt.title(title)
+# Noise cancled audio, cleanpotc
+noise_cancled_audio_amplitude, noise_cancled_audio_data = sample_audio.multi_band_stop_filter([
+    1000, 5000, 7000], [14, 14, 14])
+save_outputs(noise_cancled_audio_amplitude, noise_cancled_audio_data,
+             sample_audio.frequency, sample_audio.rate, file_dir_name=save_dir / 'cleanpotc')
 
-# Plotting all charts in subplots
-fig, axs = plt.subplots(4, 2, figsize=(15, 20))
+# Set noise cancled audio to work on
+clean_audio = AudioAnalysis(audio_data={'rate': sample_audio.rate,
+                                        'data': noise_cancled_audio_data,
+                                        'amplitude': noise_cancled_audio_amplitude,
+                                        'frequency': sample_audio.frequency})
+# x2 audio, fastpotc_x2
+fast_audio_x2_data, fast_audio_x2_amp, fast_audio_x2_freq, fast_audio_x2_rate = clean_audio.change_speed(
+    2)
+save_outputs(fast_audio_x2_amp, fast_audio_x2_data, fast_audio_x2_freq,
+             clean_audio.rate, file_dir_name=save_dir / 'fastpotc_x2')
 
-# Original audio
-rate, data, amplitude, frequency = read_voice('data/audio/potc.wav')
-plt.subplot(4, 2, 1)
-plot_amplitude_frequency(amplitude, frequency, title="Original Amplitude-Frequency")
-plt.subplot(4, 2, 2)
-plot_spectrogram(data, rate, title="Original Spectrogram")
+# x_half audio, slowpotc_x_half
+slow_audio_x_half_data, slow_audio_x_half_amp, slow_audio_x_half_freq, slow_audio_x_half_rate = clean_audio.change_speed(
+    .5)
+save_outputs(slow_audio_x_half_amp, slow_audio_x_half_data, slow_audio_x_half_freq,
+             clean_audio.rate, file_dir_name=save_dir / 'slowpotc_x_half')
 
-# Filtered audio
-filtered_rate, filtered_data, filtered_amplitude, filtered_frequency = read_voice('data/newaudio/cleanpotc.wav')
-plt.subplot(4, 2, 3)
-plot_amplitude_frequency(filtered_amplitude, filtered_frequency, title="Filtered Amplitude-Frequency")
-plt.subplot(4, 2, 4)
-plot_spectrogram(filtered_data, filtered_rate, title="Filtered Spectrogram")
-
-# Reversed audio
-reversed_rate, reversed_data, reversed_amplitude, reversed_frequency = read_voice('data/newaudio/revpotc.wav')
-plt.subplot(4, 2, 5)
-plot_amplitude_frequency(reversed_amplitude, reversed_frequency, title="Reversed Amplitude-Frequency")
-plt.subplot(4, 2, 6)
-plot_spectrogram(reversed_data, reversed_rate, title="Reversed Spectrogram")
-
-# Mixed audio
-mixed_rate, mixed_data, mixed_amplitude, mixed_frequency = read_voice('data/newaudio/mixpotc.wav')
-plt.subplot(4, 2, 7)
-plot_amplitude_frequency(mixed_amplitude, mixed_frequency, title="Mixed Amplitude-Frequency")
-plt.subplot(4, 2, 8)
-plot_spectrogram(mixed_data, mixed_rate, title="Mixed Spectrogram")
-
-# Adjust layout
-plt.tight_layout()
-plt.show()
+# Reversed audio, revpotc
+reversed_data, reversed_amp = clean_audio.reverse_voice()
+save_outputs(reversed_amp, reversed_data, clean_audio.frequency,
+             clean_audio.rate, file_dir_name=save_dir / 'revpotc')
