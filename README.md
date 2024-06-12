@@ -11,6 +11,8 @@ This repository contains a comprehensive suite of tools and scripts for processi
 - **Sound Mixing**: Combine multiple audio files in the frequency domain.
 - **Visualization**: Generate and visualize amplitude-frequency plots and spectrograms.
 
+See the [Document](notebook/project_doc.md) for more details.
+
 ## Installation
 
 Ensure you have the following Python libraries installed:
